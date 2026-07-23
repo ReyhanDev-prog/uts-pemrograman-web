@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CV - Reyhan Aditya Kusumah</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; }
+    .content-wrapper { background: #f4f6f9; }
+    .card { border-radius: 10px; transition: transform 0.2s; }
+    .card:hover { transform: translateY(-3px); }
+    .profile-img { width: 160px; height: 160px; object-fit: cover; border: 4px solid #007bff; }
+    .badge-tech { background-color: #e9ecef; color: #495057; margin-right: 5px; }
+    .edit-btn { float: right; margin-top: -6px; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; }
+    .card-header .card-title { display: flex; align-items: center; gap: 8px; }
+    .empty-message { color: #6c757d; font-style: italic; }
+    .loading-spinner { display: inline-block; width: 1rem; height: 1rem; border: 2px solid #e9ecef; border-top-color: #007bff; border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .toast-container { z-index: 9999; }
+  </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+  <!-- Header -->
+  <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+    <div class="container">
+      <h4 class="m-0"><i class="fas fa-code"></i> Portfolio & Curriculum Vitae</h4>
+      <div>
+        <button id="refreshBtn" class="btn btn-outline-primary btn-sm" title="Refresh data">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+        <span id="statusBadge" class="badge bg-success ms-2">Mode: Server (JSON)</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="content-wrapper">
+    <section class="content pt-4">
+      <div class="container">
+        <div id="loadingOverlay" class="text-center py-5" style="display:none;">
+          <div class="loading-spinner" style="width:2.5rem;height:2.5rem;border-width:4px;"></div>
+          <p class="mt-2">Memuat data...</p>
+        </div>
+        <div id="cvContent">
+          <!-- Profile Header -->
+          <div class="row">
+            <div class="col-12">
+              <div class="card card-primary card-outline">
+                <div class="card-body box-profile text-center">
+                  <img class="profile-user-img img-fluid img-circle profile-img mb-3" id="profileImage" src="profil.jpg" alt="Reyhan Aditya" />
+                  <h3 class="profile-username font-weight-bold" id="profileName">Reyhan Aditya Kusumah</h3>
+                  <p class="text-primary font-weight-bold" id="profileTitle">Backend Engineer | Machine Learning Enthusiast</p>
+                  <p id="profileContact">
+                    <i class="fas fa-map-marker-alt"></i> <span id="profileLocation">Bandung, Indonesia</span> |
+                    <i class="fas fa-envelope"></i> <span id="profileEmail">reyhanak02@gmail.com</span>
+                  </p>
+                  <div class="d-flex justify-content-center gap-2">
+                    <a id="profileLinkedin" href="#" target="_blank" class="btn btn-primary btn-sm"><i class="fab fa-linkedin"></i> LinkedIn</a>
+                    <a id="profileGithub" href="#" target="_blank" class="btn btn-dark btn-sm"><i class="fab fa-github"></i> GitHub</a>
+                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editProfileModal"><i class="fas fa-pen"></i> Edit Profil</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4">
+              <!-- About -->
+              <div class="card card-primary">
+                <div class="card-header">
+                  <h3 class="card-title"><i class="fas fa-user"></i> Tentang Saya</h3>
+                  <button class="btn btn-warning btn-sm edit-btn" data-bs-toggle="modal" data-bs-target="#editAboutModal"><i class="fas fa-pen"></i></button>
+                </div>
+                <div class="card-body"><p id="aboutText">...</p></div>
+              </div>
+              <!-- Education -->
+              <div class="card card-primary">
+                <div class="card-header">
+                  <h3 class="card-title"><i class="fas fa-graduation-cap"></i> Pendidikan</h3>
+                  <button class="btn btn-warning btn-sm edit-btn" data-bs-toggle="modal" data-bs-target="#editEducationModal"><i class="fas fa-pen"></i></button>
+                </div>
+                <div class="card-body" id="educationContainer"></div>
+              </div>
+              <!-- Skills -->
+              <div class="card card-primary">
+                <div class="card-header">
+                  <h3 class="card-title"><i class="fas fa-laptop-code"></i> Keahlian Teknis</h3>
+                  <button class="btn btn-warning btn-sm edit-btn" data-bs-toggle="modal" data-bs-target="#editSkillsModal"><i class="fas fa-pen"></i></button>
+                </div>
+                <div class="card-body" id="skillsContainer"></div>
+              </div>
+            </div>
+            <div class="col-md-8">
+              <!-- Projects -->
+              <div class="card card-primary">
+                <div class="card-header">
+                  <h3 class="card-title"><i class="fas fa-project-diagram"></i> Proyek Utama</h3>
+                  <button class="btn btn-warning btn-sm edit-btn" data-bs-toggle="modal" data-bs-target="#editProjectsModal"><i class="fas fa-pen"></i></button>
+                </div>
+                <div class="card-body" id="projectsContainer"></div>
+              </div>
+              <!-- Interests -->
+              <div class="card card-primary">
+                <div class="card-header">
+                  <h3 class="card-title"><i class="fas fa-industry"></i> Bidang Ketertarikan Lainnya</h3>
+                  <button class="btn btn-warning btn-sm edit-btn" data-bs-toggle="modal" data-bs-target="#editInterestsModal"><i class="fas fa-pen"></i></button>
+                </div>
+                <div class="card-body" id="interestsContainer"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <footer class="main-footer text-center"><strong>Copyright &copy; 2026 <a href="#">Reyhan Aditya Kusumah</a>.</strong></footer>
+</div>
+
+<!-- ======== MODALS ======== -->
+<!-- Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title"><i class="fas fa-user-edit"></i> Edit Profil</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <form id="editProfileForm">
+          <div class="mb-2"><label class="form-label">Nama</label><input type="text" class="form-control" id="editProfileName" /></div>
+          <div class="mb-2"><label class="form-label">Jabatan</label><input type="text" class="form-control" id="editProfileTitle" /></div>
+          <div class="mb-2"><label class="form-label">Lokasi</label><input type="text" class="form-control" id="editProfileLocation" /></div>
+          <div class="mb-2"><label class="form-label">Email</label><input type="email" class="form-control" id="editProfileEmail" /></div>
+          <div class="mb-2"><label class="form-label">LinkedIn URL</label><input type="text" class="form-control" id="editProfileLinkedin" /></div>
+          <div class="mb-2"><label class="form-label">GitHub URL</label><input type="text" class="form-control" id="editProfileGithub" /></div>
+          <div class="mb-2"><label class="form-label">Foto (URL)</label><input type="text" class="form-control" id="editProfileImage" placeholder="profil.jpg" /></div>
+        </form>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button type="button" class="btn btn-primary" id="saveProfileBtn"><i class="fas fa-save"></i> Simpan</button></div>
+    </div>
+  </div>
+</div>
+<!-- About Modal -->
+<div class="modal fade" id="editAboutModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title"><i class="fas fa-edit"></i> Edit Tentang Saya</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body"><textarea class="form-control" id="editAboutText" rows="4"></textarea></div>
+      <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button type="button" class="btn btn-primary" id="saveAboutBtn"><i class="fas fa-save"></i> Simpan</button></div>
+    </div>
+  </div>
+</div>
+<!-- Education Modal -->
+<div class="modal fade" id="editEducationModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title"><i class="fas fa-edit"></i> Edit Pendidikan</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <form id="editEducationForm">
+          <div class="mb-2"><label class="form-label">Institusi</label><input type="text" class="form-control" id="editEduInstitution" /></div>
+          <div class="mb-2"><label class="form-label">Gelar</label><input type="text" class="form-control" id="editEduDegree" /></div>
+          <div class="mb-2"><label class="form-label">Semester</label><input type="text" class="form-control" id="editEduSemester" /></div>
+          <div class="mb-2"><label class="form-label">Fokus</label><input type="text" class="form-control" id="editEduFocus" /></div>
+        </form>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button type="button" class="btn btn-primary" id="saveEducationBtn"><i class="fas fa-save"></i> Simpan</button></div>
+    </div>
+  </div>
+</div>
+<!-- Skills Modal -->
+<div class="modal fade" id="editSkillsModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title"><i class="fas fa-edit"></i> Edit Keahlian</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <p class="text-muted small">Setiap keahlian dipisahkan koma. Format: <strong>Kategori: item1, item2</strong></p>
+        <div id="skillsEditor"></div>
+        <button type="button" class="btn btn-success btn-sm mt-2" id="addSkillGroupBtn"><i class="fas fa-plus"></i> Tambah Kategori</button>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button type="button" class="btn btn-primary" id="saveSkillsBtn"><i class="fas fa-save"></i> Simpan</button></div>
+    </div>
+  </div>
+</div>
+<!-- Projects Modal -->
+<div class="modal fade" id="editProjectsModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title"><i class="fas fa-edit"></i> Edit Proyek</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div id="projectsEditor"></div>
+        <button type="button" class="btn btn-success btn-sm mt-2" id="addProjectBtn"><i class="fas fa-plus"></i> Tambah Proyek</button>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button type="button" class="btn btn-primary" id="saveProjectsBtn"><i class="fas fa-save"></i> Simpan</button></div>
+    </div>
+  </div>
+</div>
+<!-- Interests Modal -->
+<div class="modal fade" id="editInterestsModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title"><i class="fas fa-edit"></i> Edit Ketertarikan</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div id="interestsEditor"></div>
+        <button type="button" class="btn btn-success btn-sm mt-2" id="addInterestBtn"><i class="fas fa-plus"></i> Tambah Ketertarikan</button>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button type="button" class="btn btn-primary" id="saveInterestsBtn"><i class="fas fa-save"></i> Simpan</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index:9999">
+  <div id="liveToast" class="toast align-items-center text-white border-0" role="alert">
+    <div class="d-flex"><div class="toast-body" id="toastMessage">Berhasil!</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+<script>
+// ============================================================
+// KONFIGURASI
+// ============================================================
+const API_URL = 'api.php';   // relative path ke backend PHP
+
+// ============================================================
+// STATE
+// ============================================================
+let cvData = { profile: {}, about: '', education: {}, skills: [], projects: [], interests: [] };
+
+// ============================================================
+// UTILITY
+// ============================================================
+function showToast(msg, bg = 'bg-success') {
+  const toastEl = document.getElementById('liveToast');
+  document.getElementById('toastMessage').textContent = msg;
+  toastEl.className = `toast align-items-center text-white border-0 ${bg}`;
+  const toast = new bootstrap.Toast(toastEl);
+  toast.show();
+}
+
+// ============================================================
+// LOAD DATA (dari API)
+// ============================================================
+async function loadCVData() {
+  const overlay = document.getElementById('loadingOverlay');
+  const content = document.getElementById('cvContent');
+  overlay.style.display = 'block';
+  content.style.display = 'none';
+
+  try {
+    const resp = await fetch(API_URL);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    cvData = data;
+    renderAll();
+    overlay.style.display = 'none';
+    content.style.display = 'block';
+    showToast('Data berhasil dimuat dari server');
+  } catch (err) {
+    console.error('Gagal memuat data:', err);
+    overlay.style.display = 'none';
+    content.style.display = 'block';
+    showToast('Gagal memuat data: ' + err.message, 'bg-danger');
+    // Tampilkan fallback default (tapi tidak tersimpan)
+    loadFallbackData();
+    renderAll();
+  }
+}
+
+function loadFallbackData() {
+  cvData = {
+    profile: { name: 'Reyhan Aditya Kusumah', title: 'Backend Engineer | Machine Learning Enthusiast', location: 'Bandung, Indonesia', email: 'reyhanak02@gmail.com', linkedin: 'https://linkedin.com/in/reyhan-ak', github: 'https://github.com/SFZIBO', image: 'profil.jpg' },
+    about: 'Mahasiswa Teknik Informatika yang berfokus pada pengembangan sistem <strong>Backend</strong> yang scalable dan implementasi <strong>Machine Learning</strong>. Memiliki ketertarikan kuat pada arsitektur Microservices, optimasi sistem Linux, dan otomasi industri.',
+    education: { institution: 'Universitas Bale Bandung', degree: 'S1 Teknik Informatika (Semester 6)', semester: 'Semester 6', focus: 'Machine Learning & Software Architecture' },
+    skills: [
+      { category: 'Bahasa & Framework', items: ['Go (Golang)', 'Python', 'Node.js'] },
+      { category: 'Machine Learning', items: ['Random Forest', 'XGBoost', 'Scikit-learn'] },
+      { category: 'Sistem & Tooling', items: ['Docker', 'KVM (WinBoat)', 'CachyOS (Arch Linux)', 'PLC (LDmicro, OpenPLC)'] }
+    ],
+    projects: [
+      { title: 'E-Commerce Microservices System', role: 'Backend Developer', description: 'Membangun arsitektur microservices untuk platform e-commerce menggunakan Go. Mengimplementasikan RESTful API, database PostgreSQL, dan manajemen state yang efisien.', technologies: ['Golang', 'Microservices', 'PostgreSQL'] },
+      { title: 'Monitoring Beban Kognitif (Skripsi)', role: 'Peneliti', description: 'Penelitian mengenai implementasi Cognitive Load Theory (CLT) dalam lingkungan digital menggunakan komparasi algoritma Random Forest dan XGBoost untuk mendeteksi overload kognitif pada pengguna.', technologies: ['Python', 'XGBoost', 'Data Science'] },
+      { title: 'WinBoat Project', role: 'Contributor', description: 'Alat open-source untuk menjalankan aplikasi Windows di lingkungan Linux menggunakan Docker dan KVM untuk performa yang lebih terisolasi dan stabil.', technologies: ['Docker', 'KVM', 'CachyOS'] }
+    ],
+    interests: [
+      { title: 'Industrial Automation', description: 'Pemrograman PLC menggunakan Ladder Logic (LDmicro & OpenPLC).' },
+      { title: 'System Administration', description: 'Kustomisasi Arch-based Linux (CachyOS) dan optimasi X11.' }
+    ]
+  };
+}
+
+// ============================================================
+// RENDER FUNCTIONS
+// ============================================================
+function renderAll() {
+  renderProfile();
+  renderAbout();
+  renderEducation();
+  renderSkills();
+  renderProjects();
+  renderInterests();
+}
+
+function renderProfile() {
+  const p = cvData.profile || {};
+  document.getElementById('profileName').textContent = p.name || '';
+  document.getElementById('profileTitle').textContent = p.title || '';
+  document.getElementById('profileLocation').textContent = p.location || '';
+  document.getElementById('profileEmail').textContent = p.email || '';
+  document.getElementById('profileLinkedin').href = p.linkedin || '#';
+  document.getElementById('profileGithub').href = p.github || '#';
+  const img = document.getElementById('profileImage');
+  if (p.image) img.src = p.image;
+  // populate form
+  document.getElementById('editProfileName').value = p.name || '';
+  document.getElementById('editProfileTitle').value = p.title || '';
+  document.getElementById('editProfileLocation').value = p.location || '';
+  document.getElementById('editProfileEmail').value = p.email || '';
+  document.getElementById('editProfileLinkedin').value = p.linkedin || '';
+  document.getElementById('editProfileGithub').value = p.github || '';
+  document.getElementById('editProfileImage').value = p.image || '';
+}
+
+function renderAbout() {
+  document.getElementById('aboutText').innerHTML = cvData.about || '';
+  document.getElementById('editAboutText').value = cvData.about || '';
+}
+
+function renderEducation() {
+  const e = cvData.education || {};
+  const container = document.getElementById('educationContainer');
+  container.innerHTML = e.institution ? `<p><strong>${e.institution}</strong><br>${e.degree}<br><small class="text-muted">Fokus: ${e.focus || ''}</small></p>` : '<p class="empty-message">Belum ada data pendidikan.</p>';
+  document.getElementById('editEduInstitution').value = e.institution || '';
+  document.getElementById('editEduDegree').value = e.degree || '';
+  document.getElementById('editEduSemester').value = e.semester || '';
+  document.getElementById('editEduFocus').value = e.focus || '';
+}
+
+function renderSkills() {
+  const container = document.getElementById('skillsContainer');
+  const skills = cvData.skills || [];
+  if (!skills.length) { container.innerHTML = '<p class="empty-message">Belum ada keahlian.</p>'; return; }
+  let html = '';
+  skills.forEach(g => {
+    html += `<h6 class="font-weight-bold">${g.category}:</h6><p>`;
+    (g.items || []).forEach(item => html += `<span class="badge badge-tech">${item}</span> `);
+    html += `</p>`;
+  });
+  container.innerHTML = html;
+}
+
+function renderProjects() {
+  const container = document.getElementById('projectsContainer');
+  const projects = cvData.projects || [];
+  if (!projects.length) { container.innerHTML = '<p class="empty-message">Belum ada proyek.</p>'; return; }
+  let html = '';
+  projects.forEach((proj, idx) => {
+    const techs = (proj.technologies || []).map(t => `<span class="badge badge-tech">${t}</span>`).join(' ');
+    html += `<div class="post ${idx > 0 ? 'border-top pt-3 mt-3' : ''}">
+      <div class="user-block"><span class="username text-primary">${proj.title}</span><span class="description">${proj.role || 'Proyek'}</span></div>
+      <p>${proj.description || ''}</p><p>${techs}</p>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function renderInterests() {
+  const container = document.getElementById('interestsContainer');
+  const interests = cvData.interests || [];
+  if (!interests.length) { container.innerHTML = '<p class="empty-message">Belum ada ketertarikan.</p>'; return; }
+  let html = '<div class="row">';
+  interests.forEach(item => {
+    html += `<div class="col-md-6"><h6><strong>${item.title || ''}</strong></h6><p class="text-muted">${item.description || ''}</p></div>`;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ============================================================
+// EDITOR RENDER (untuk modal)
+// ============================================================
+function renderSkillsEditor() {
+  const editor = document.getElementById('skillsEditor');
+  const skills = cvData.skills || [];
+  if (!skills.length) { editor.innerHTML = '<p class="text-muted">Belum ada kategori.</p>'; return; }
+  let html = '';
+  skills.forEach((g, idx) => {
+    html += `<div class="skill-group mb-2 p-2 border rounded" data-index="${idx}">
+      <div class="row g-1">
+        <div class="col-md-4"><input type="text" class="form-control form-control-sm skill-category" value="${g.category}" placeholder="Kategori" /></div>
+        <div class="col-md-7"><input type="text" class="form-control form-control-sm skill-items" value="${(g.items || []).join(', ')}" placeholder="item1, item2" /></div>
+        <div class="col-md-1"><button type="button" class="btn btn-danger btn-sm remove-skill-group" data-index="${idx}"><i class="fas fa-times"></i></button></div>
+      </div>
+    </div>`;
+  });
+  editor.innerHTML = html;
+  editor.querySelectorAll('.remove-skill-group').forEach(btn => {
+    btn.addEventListener('click', function() {
+      cvData.skills.splice(parseInt(this.dataset.index), 1);
+      renderSkillsEditor();
+      renderSkills();
+    });
+  });
+}
+
+function renderProjectsEditor() {
+  const editor = document.getElementById('projectsEditor');
+  const projects = cvData.projects || [];
+  if (!projects.length) { editor.innerHTML = '<p class="text-muted">Belum ada proyek.</p>'; return; }
+  let html = '';
+  projects.forEach((p, idx) => {
+    html += `<div class="project-item mb-2 p-2 border rounded" data-index="${idx}">
+      <div class="row g-1">
+        <div class="col-md-3"><input type="text" class="form-control form-control-sm proj-title" value="${p.title || ''}" placeholder="Judul" /></div>
+        <div class="col-md-2"><input type="text" class="form-control form-control-sm proj-role" value="${p.role || ''}" placeholder="Peran" /></div>
+        <div class="col-md-6"><input type="text" class="form-control form-control-sm proj-tech" value="${(p.technologies || []).join(', ')}" placeholder="Teknologi (koma)" /></div>
+        <div class="col-md-1"><button type="button" class="btn btn-danger btn-sm remove-project" data-index="${idx}"><i class="fas fa-times"></i></button></div>
+      </div>
+      <div class="row mt-1"><div class="col-12"><textarea class="form-control form-control-sm proj-desc" rows="2" placeholder="Deskripsi">${p.description || ''}</textarea></div></div>
+    </div>`;
+  });
+  editor.innerHTML = html;
+  editor.querySelectorAll('.remove-project').forEach(btn => {
+    btn.addEventListener('click', function() {
+      cvData.projects.splice(parseInt(this.dataset.index), 1);
+      renderProjectsEditor();
+      renderProjects();
+    });
+  });
+}
+
+function renderInterestsEditor() {
+  const editor = document.getElementById('interestsEditor');
+  const interests = cvData.interests || [];
+  if (!interests.length) { editor.innerHTML = '<p class="text-muted">Belum ada ketertarikan.</p>'; return; }
+  let html = '';
+  interests.forEach((item, idx) => {
+    html += `<div class="interest-item mb-2 p-2 border rounded" data-index="${idx}">
+      <div class="row g-1">
+        <div class="col-md-4"><input type="text" class="form-control form-control-sm int-title" value="${item.title || ''}" placeholder="Judul" /></div>
+        <div class="col-md-7"><input type="text" class="form-control form-control-sm int-desc" value="${item.description || ''}" placeholder="Deskripsi" /></div>
+        <div class="col-md-1"><button type="button" class="btn btn-danger btn-sm remove-interest" data-index="${idx}"><i class="fas fa-times"></i></button></div>
+      </div>
+    </div>`;
+  });
+  editor.innerHTML = html;
+  editor.querySelectorAll('.remove-interest').forEach(btn => {
+    btn.addEventListener('click', function() {
+      cvData.interests.splice(parseInt(this.dataset.index), 1);
+      renderInterestsEditor();
+      renderInterests();
+    });
+  });
+}
+
+// ============================================================
+// SAVE FUNCTIONS (kirim seluruh data ke server)
+// ============================================================
+async function saveToServer() {
+  try {
+    const resp = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cvData)
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const result = await resp.json();
+    if (result.status === 'success') {
+      showToast('Data berhasil disimpan ke server');
+    } else {
+      showToast('Gagal menyimpan: ' + (result.message || 'unknown'), 'bg-danger');
+    }
+  } catch (err) {
+    console.error('Save error:', err);
+    showToast('Gagal menyimpan: ' + err.message, 'bg-danger');
+  }
+}
+
+// Fungsi pembantu: update state, render, lalu simpan
+async function updateAndSave(updatedData, renderFn) {
+  Object.assign(cvData, updatedData);
+  renderFn();
+  await saveToServer();
+}
+
+// ============================================================
+// EVENT BINDINGS
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+  loadCVData();
+
+  document.getElementById('refreshBtn').addEventListener('click', function() {
+    loadCVData();
+  });
+
+  // Profile
+  document.getElementById('saveProfileBtn').addEventListener('click', async function() {
+    const profile = {
+      name: document.getElementById('editProfileName').value.trim(),
+      title: document.getElementById('editProfileTitle').value.trim(),
+      location: document.getElementById('editProfileLocation').value.trim(),
+      email: document.getElementById('editProfileEmail').value.trim(),
+      linkedin: document.getElementById('editProfileLinkedin').value.trim(),
+      github: document.getElementById('editProfileGithub').value.trim(),
+      image: document.getElementById('editProfileImage').value.trim() || 'profil.jpg'
+    };
+    await updateAndSave({ profile }, renderProfile);
+    bootstrap.Modal.getInstance(document.getElementById('editProfileModal')).hide();
+  });
+
+  // About
+  document.getElementById('saveAboutBtn').addEventListener('click', async function() {
+    const about = document.getElementById('editAboutText').value.trim();
+    await updateAndSave({ about }, renderAbout);
+    bootstrap.Modal.getInstance(document.getElementById('editAboutModal')).hide();
+  });
+
+  // Education
+  document.getElementById('saveEducationBtn').addEventListener('click', async function() {
+    const education = {
+      institution: document.getElementById('editEduInstitution').value.trim(),
+      degree: document.getElementById('editEduDegree').value.trim(),
+      semester: document.getElementById('editEduSemester').value.trim(),
+      focus: document.getElementById('editEduFocus').value.trim()
+    };
+    await updateAndSave({ education }, renderEducation);
+    bootstrap.Modal.getInstance(document.getElementById('editEducationModal')).hide();
+  });
+
+  // Skills
+  document.getElementById('saveSkillsBtn').addEventListener('click', async function() {
+    const groups = document.querySelectorAll('.skill-group');
+    const skills = [];
+    groups.forEach(g => {
+      const category = g.querySelector('.skill-category').value.trim();
+      const itemsStr = g.querySelector('.skill-items').value.trim();
+      const items = itemsStr ? itemsStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+      if (category) skills.push({ category, items });
+    });
+    await updateAndSave({ skills }, renderSkills);
+    bootstrap.Modal.getInstance(document.getElementById('editSkillsModal')).hide();
+  });
+
+  // Projects
+  document.getElementById('saveProjectsBtn').addEventListener('click', async function() {
+    const items = document.querySelectorAll('.project-item');
+    const projects = [];
+    items.forEach(item => {
+      const title = item.querySelector('.proj-title').value.trim();
+      const role = item.querySelector('.proj-role').value.trim();
+      const techStr = item.querySelector('.proj-tech').value.trim();
+      const desc = item.querySelector('.proj-desc').value.trim();
+      const technologies = techStr ? techStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+      if (title) projects.push({ title, role, description: desc, technologies });
+    });
+    await updateAndSave({ projects }, renderProjects);
+    bootstrap.Modal.getInstance(document.getElementById('editProjectsModal')).hide();
+  });
+
+  // Interests
+  document.getElementById('saveInterestsBtn').addEventListener('click', async function() {
+    const items = document.querySelectorAll('.interest-item');
+    const interests = [];
+    items.forEach(item => {
+      const title = item.querySelector('.int-title').value.trim();
+      const desc = item.querySelector('.int-desc').value.trim();
+      if (title) interests.push({ title, description: desc });
+    });
+    await updateAndSave({ interests }, renderInterests);
+    bootstrap.Modal.getInstance(document.getElementById('editInterestsModal')).hide();
+  });
+
+  // Add buttons
+  document.getElementById('addSkillGroupBtn').addEventListener('click', function() {
+    if (!cvData.skills) cvData.skills = [];
+    cvData.skills.push({ category: 'Kategori Baru', items: [] });
+    renderSkillsEditor();
+  });
+  document.getElementById('addProjectBtn').addEventListener('click', function() {
+    if (!cvData.projects) cvData.projects = [];
+    cvData.projects.push({ title: 'Proyek Baru', role: 'Peran', description: '', technologies: [] });
+    renderProjectsEditor();
+  });
+  document.getElementById('addInterestBtn').addEventListener('click', function() {
+    if (!cvData.interests) cvData.interests = [];
+    cvData.interests.push({ title: 'Judul Baru', description: 'Deskripsi' });
+    renderInterestsEditor();
+  });
+
+  // Refresh editor saat modal dibuka
+  document.getElementById('editSkillsModal').addEventListener('show.bs.modal', renderSkillsEditor);
+  document.getElementById('editProjectsModal').addEventListener('show.bs.modal', renderProjectsEditor);
+  document.getElementById('editInterestsModal').addEventListener('show.bs.modal', renderInterestsEditor);
+});
+</script>
+</body>
+</html>
